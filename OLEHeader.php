@@ -14,9 +14,9 @@
 class OLEHeader {
 	const
 		ENDOFCHAIN = 0xfffffffe,
-		FREESECT = 0xffffffff,
-		FATSECT = 0xfffffffd,
-		DIFSECT = 0xfffffffc;
+		FREESECT   = 0xffffffff,
+		FATSECT    = 0xfffffffd,
+		DIFSECT    = 0xfffffffc;
 
 	protected
 		$oleHeaderSignature,

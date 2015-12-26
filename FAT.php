@@ -1,37 +1,21 @@
 <?php
 
 class FAT {
-	const
-		ENDOFCHAIN = 0xfffffffe,
-		FREESECT = 0xffffffff,
-		FATSECT = 0xfffffffd,
-		DIFSECT = 0xfffffffc;
-	//private	
 	private
 		$fatArray = array(),
 		$sectorSize;
-	//const
-
 
 	/*		===============================================
 	 * 		Construct the entire FAT/SAT from the DIFAT/MSAT
 	 * 
 	 *///	===============================================
-
 	public function __construct( OLEFile $oleFile ) {
 		$oleStream        = $oleFile->Get_OLE_Stream();
-		$seekPos          = ftell( $oleStream );
 		$this->sectorSize = $oleFile->Get_Sector_Size();
-		fseek( $oleStream, 0 );
-		$difatArray = $oleFile->Get_DIFAT();
-		foreach ( $difatArray as $secID ) {
-			if ( $secID != FAT::FREESECT && $secID != FAT::ENDOFCHAIN ) {
+		foreach ( $oleFile->Get_DIFAT() as $secID ) {
+			if ( $secID != OLEHeader::FREESECT && $secID != OLEHeader::ENDOFCHAIN ) {
 				fseek( $oleStream, ( $secID * $this->sectorSize ) + 512 );
-				$readBuf = Helpers:: Hex_Str_To_Array( Helpers:: Fix_Hex( bin2hex( fread( $oleStream, $this->sectorSize ) ), 8 ), 8 );
-				for ( $i = 0; $i < count( $readBuf ); $i ++ ) {
-					$this->fatArray [] = $readBuf [ $i ];
-				}
-
+				$this->fatArray = array_merge( $this->fatArray, unpack( 'V*', fread( $oleStream, $this->sectorSize ) ) );
 			}
 		}
 	}
@@ -39,7 +23,4 @@ class FAT {
 	public function Get_FAT() {
 		return $this->fatArray;
 	}
-
 }
-
-?>
