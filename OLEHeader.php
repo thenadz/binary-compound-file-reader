@@ -15,8 +15,7 @@ class OLEHeader
 				ENDOFCHAIN 	= 	0xfffffffe	,
 				FREESECT 	= 	0xffffffff	,
 				FATSECT		= 	0xfffffffd	,
-				DIFSECT		= 	0xfffffffc	; 
-	//const
+				DIFSECT		= 	0xfffffffc	;
 	
 	protected 
 				$oleHeaderSignature,
@@ -38,7 +37,6 @@ class OLEHeader
 				$numDIFATSectors,
 				$difat,
 				$sectorSize; /* Not in specs. */
-	//protected
 	
 	/*	=================================================================
 	 * 	Read contents of header and seek back to offset 0.
@@ -46,26 +44,53 @@ class OLEHeader
 	 */		
 	public function __construct ( OLEFile $oleFile )
 	{
+		static $header_format =
+			'PoleHeaderSignature/' .
+			'32HoleHeaderCLSID' .
+			'voleMinorVersion/' .
+			'voleMajorVersion' .
+			'voleByteOrder/' .
+			'voleSectorShift/' .
+			'voleMiniSectorShift/' .
+			'12HoleReserved/' .
+			'VnumDirSectors/' .
+			'VnumFATSectors/' .
+			'VfirstDirSectorLoc/' .
+			'VtransactionSigNum/' .
+			'VminiStreamCutoffSize/' .
+			'VfirstMiniFATSectorLoc/' .
+			'VnumMiniFATSectors/' .
+			'VfirstDIFATSectorLoc/' .
+			'VnumDIFATSectors/' .
+			'436Vdifat';
+
 		$oleStream 						= $oleFile -> Get_OLE_Stream ( );
 		fseek ( $oleStream , 0 );
-		$this -> oleHeaderSignature	 	= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 8  ) ) ) );
-		$this -> oleHeaderCLSID 		= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 16 ) ) ) );
-		$this -> oleMinorVersion 		= hexdec ( Helpers :: Fix_Hex( bin2hex ( fread ( $oleStream , 2  ) ) ) );
-		$this -> oleMajorVersion 		= hexdec ( Helpers :: Fix_Hex( bin2hex ( fread ( $oleStream , 2  ) ) ) );
-		$this -> oleByteOrder 			= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 2  ) ) ) );
-		$this -> oleSectorShift 		= hexdec ( Helpers :: Fix_Hex( bin2hex ( fread ( $oleStream , 2  ) ) ) );
-		$this -> oleMiniSectorShift 	= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 2  ) ) ) );
-		$this -> oleReserved 			= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 6  ) ) ) );
-		$this -> numDirSectors 			= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> numFATSectors 			= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> firstDirSectorLoc 		= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> transactionSigNum 		= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> miniStreamCutoffSize 	= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> firstMiniFATSectorLoc 	= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> numMiniFATSectors 		= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> firstDIFATSectorLoc 	= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> numDIFATSectors 		= hexdec ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 4 ) ) ) );
-		$this -> difat 					= Helpers :: Hex_Str_To_Array ( Helpers :: Fix_Hex ( bin2hex ( fread ( $oleStream , 436 ) ) , 8 ) , 8 ); 
+		$header = unpack( $header_format, @fread( $oleStream, 512 ) );
+		$this -> oleHeaderSignature	 	= $header['oleHeaderSignature'];
+		$this -> oleHeaderCLSID 		= $header['oleHeaderCLSID'];
+		$this -> oleMinorVersion 		= $header['oleMinorVersion'];
+		$this -> oleMajorVersion 		= $header['oleMajorVersion'];
+		$this -> oleByteOrder 			= $header['oleByteOrder'];
+		$this -> oleSectorShift 		= $header['oleSectorShift'];
+		$this -> oleMiniSectorShift 	= $header['oleMiniSectorShift'];
+		$this -> oleReserved 			= $header['oleReserved'];
+		$this -> numDirSectors 			= $header['numDirSectors'];
+		$this -> numFATSectors 			= $header['numFATSectors'];
+		$this -> firstDirSectorLoc 		= $header['firstDirSectorLoc'];
+		$this -> transactionSigNum 		= $header['transactionSigNum'];
+		$this -> miniStreamCutoffSize 	= $header['miniStreamCutoffSize'];
+		$this -> firstMiniFATSectorLoc 	= $header['firstMiniFATSectorLoc'];
+		$this -> numMiniFATSectors 		= $header['numMiniFATSectors'];
+		$this -> firstDIFATSectorLoc 	= $header['firstDIFATSectorLoc'];
+		$this -> numDIFATSectors 		= $header['numDIFATSectors'];
+		$this -> difat 					= array();
+		foreach ( $header as $k => $v ) {
+			if ( substr( $k, 0, 5 ) === 'difat' ) {
+				$this->difat[intval( substr( $k, 5 ) )] = $v;
+			}
+		}
+
 		$this -> oleStream				= $oleStream;
 		fseek ( $this -> oleStream , 0 );
 	}
@@ -89,7 +114,7 @@ class OLEHeader
 	
 	public function Validate_Header( )
 	{
-		$errorFlag=true;
+		$errorFlag = true;
 		
 		if ( $this -> oleHeaderSignature 			!= 0xe11ab1a1e011cfd0 ) 					$errorFlag = false;
 		if ( $this -> oleHeaderCLSID 				!= 0x00000000000000000000000000000000 ) 	$errorFlag = false;
@@ -112,6 +137,7 @@ class OLEHeader
 		if ( $this -> miniStreamCutoffSize 			!= 0x0000001000 ) 							$errorFlag = false;
 		if ( $this -> oleMajorVersion 				== 0x0003 )     $this -> sectorSize = 512;
 		else if ( $this -> oleMajorVersion 			== 0x0004 ) 	$this -> sectorSize = 4096;
+		else                                                                                    $errorFlag = false;
 		
 		return $errorFlag;
 	}
@@ -155,6 +181,4 @@ class OLEHeader
 	{
 		return $this -> firstDIFATSectorLoc;
 	}
-	
 }
-?>
