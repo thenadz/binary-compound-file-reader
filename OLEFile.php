@@ -34,7 +34,6 @@ class OLEFile {
 	 *  If validation fails, the function returns with an error.
 	 * ===============================================================================
 	 */
-
 	public function __construct( $OLEFileStream ) {
 		$this->fileStream = $OLEFileStream;
 		$seekPos          = ftell( $this->fileStream );
@@ -67,9 +66,9 @@ class OLEFile {
 		$seekPos          = ftell( $this->fileStream );
 		$this->difatArray = $this->OLEHeader->Get_DIFAT();
 		$firstDIFATSecLoc = $this->OLEHeader->Get_First_Difat_Sec_Loc();
-		if ( $firstDIFATSecLoc != OLEFile::ENDOFCHAIN ) {
+		if ( $firstDIFATSecLoc != self::ENDOFCHAIN ) {
 			fseek( $this->fileStream, ( $firstDIFATSecLoc * $this->sectorSize ) + 512 );
-			$readBuf = Helpers:: Hex_Str_To_Array( Helpers:: Fix_Hex( bin2hex( fread( $this->fileStream, $this->sectorSize ) ), 8 ), 8 );
+			$readBuf = unpack( 'V*', @fread( $this->fileStream, $this->sectorSize ) );
 
 			for ( $i = 0; $i < count( $readBuf ); $i ++ ) {
 				$this->difatArray [] = $readBuf [ $i ];
@@ -77,10 +76,10 @@ class OLEFile {
 
 			for ( $i = 1; $i < $this->OLEHeader->Get_Num_DIFAT_Sectors(); $i ++ ) {
 				$count = count( $this->difatArray ) - 1;
-				if ( $this->difatArray [ $count ] != OLEFile::ENDOFCHAIN ) {
+				if ( $this->difatArray [ $count ] != self::ENDOFCHAIN ) {
 					fseek( $this->fileStream, ( $this->difatArray [ $count ] * $this->sectorSize ) + 512 );
 					unset ( $this->difatArray [ $count ] );
-					$this->difatArray = array_merge( $this->difatArray, Helpers:: Hex_Str_To_Array( Helpers:: Fix_Hex( bin2hex( fread( $this->fileStream, $this->sectorSize ) ), 8 ), 8 ) );
+					$this->difatArray = array_merge( $this->difatArray, unpack( 'V*', @fread( $this->fileStream, $this->sectorSize ) ) );
 				} else {
 					break;
 				}
@@ -98,7 +97,6 @@ class OLEFile {
 	 *  Use for sequential reads.
 	 *	===========================
 	 */
-
 	private function Build_FAT() {
 		$seekPos        = ftell( $this->fileStream );
 		$fatObject      = new FAT ( $this );
@@ -114,7 +112,6 @@ class OLEFile {
 	 * 	Use this function to get an arbitrary sector.
 	 * 	===========================
 	 */
-
 	public function Get_OLE_Stream() {
 		return $this->fileStream;
 	}
