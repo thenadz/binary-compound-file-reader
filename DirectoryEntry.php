@@ -96,7 +96,7 @@ class DirectoryEntry {
 	public function __construct( $file_header, $stream ) {
 		static $header_format =
 			'32vname/' .
-	        'vcb/' .
+			'vcb/' .
 			'Cmse/' .
 			'Cbflags/' .
 			'VsidLeftSib/' .
@@ -107,9 +107,8 @@ class DirectoryEntry {
 			'2VcreateTime/' .
 			'2VmodifyTime/' .
 			'VsectStart/' .
-			'VulSize/' .
-			'@128';
-		$header = unpack( $header_format, $stream );
+			'VulSize';
+		$header = unpack( $header_format,  @fread( $stream, self::DIRECTORY_ENTRY_LEN ) );
 		for ( $i = 1; $i <= 32; $i++ ) {
 			$chr = $header['name' . $i];
 			if ( $chr ==  0 ) break;
