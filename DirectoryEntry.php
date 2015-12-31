@@ -94,21 +94,20 @@ class DirectoryEntry {
 	private $ulSize;
 
 	public function __construct( $file_header, $stream ) {
-		static $header_format =
-			'32vname/' .
-	        'vcb/' .
-			'Cmse/' .
-			'Cbflags/' .
-			'VsidLeftSib/' .
-			'VsidRightSib/' .
-			'VsidChild/' .
-			'32Hclsid/' .
-			'VdwUserFlags/' .
-			'2VcreateTime/' .
-			'2VmodifyTime/' .
-			'VsectStart/' .
-			'VulSize/' .
-			'@128';
+		$header_format =
+			'v32name/' .
+	        'v1cb/' .
+			'C1mse/' .
+			'C1bflags/' .
+			'V1sidLeftSib/' .
+			'V1sidRightSib/' .
+			'V1sidChild/' .
+			'H32clsid/' .
+			'V1dwUserFlags/' .
+			'V2createTime/' .
+			'V2modifyTime/' .
+			'V1sectStart/' .
+			'V1ulSize';
 		$header = unpack( $header_format, $stream );
 		for ( $i = 1; $i <= 32; $i++ ) {
 			$chr = $header['name' . $i];

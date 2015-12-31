@@ -5,20 +5,15 @@
  */
 class FileHeader {
 	const
-		ENDOFCHAIN = 0xfffffffe,
-		FREESECT   = 0xffffffff,
-		FATSECT    = 0xfffffffd,
-		DIFSECT    = 0xfffffffc;
+		FREESECT   = -1,
+		ENDOFCHAIN = -2,
+		FATSECT    = -3,
+		DIFSECT    = -4;
 
 	/**
 	 * @var string d0cf11e0a1b11ae1
 	 */
 	private $abSig;
-
-	/**
-	 * @var string
-	 */
-	private $clid;
 
 	/**
 	 * @var int The minor version.
@@ -95,28 +90,27 @@ class FileHeader {
 	 * outside of header (if present).
 	 */
 	public function __construct( $stream ) {
-		static $header_format =
-			'16HabSig/' .            // 8   bytes
-			'32Hclid/' .             // 16  bytes
-			'vuMinorVersion/' .      // 2   bytes
-			'vuDllVersion' .         // 2   bytes
-			'vuByteOrder/' .         // 2   bytes
-			'vuSectorShift/' .       // 2   bytes
-			'vuMiniSectorShift/' .   // 2   bytes
+		$header_format =
+			'H16abSig/' .            // 8   bytes
+			'@24/' .                 // UUID -- always zero
+			'v1uMinorVersion/' .     // 2   bytes
+			'v1uDllVersion/' .       // 2   bytes
+			'v1uByteOrder/' .        // 2   bytes
+			'v1uSectorShift/' .      // 2   bytes
+			'v1uMiniSectorShift/' .  // 2   bytes
 			'@44/' .                 // 10  bytes, reserved & unused
-			'VcsectFat/' .           // 4   bytes
-			'VsectDirStart/' .       // 4   bytes
-			'Vsignature/' .          // 4   bytes
-			'VulMiniSectorCutoff/' . // 4   bytes
-			'VsectMiniFatStart/' .   // 4   bytes
-			'VcsectMiniFat/' .       // 4   bytes
-			'VsectDifStart/' .       // 4   bytes
-			'VcsectDif/' .           // 4   bytes
-			'109VsectFat';           // 436 bytes, the SECTs of the first 109 FAT sectors
+			'V1csectFat/' .          // 4   bytes
+			'V1sectDirStart/' .      // 4   bytes
+			'V1signature/' .         // 4   bytes
+			'V1ulMiniSectorCutoff/' .// 4   bytes
+			'V1sectMiniFatStart/' .  // 4   bytes
+			'V1csectMiniFat/' .      // 4   bytes
+			'V1sectDifStart/' .      // 4   bytes
+			'V1csectDif/' .          // 4   bytes
+			'V109sectFat';           // 436 bytes, the SECTs of the first 109 FAT sectors
 
 		$header                      = unpack( $header_format, @fread( $stream, 512 ) );
 		$this->abSig                 = $header['abSig'];
-		$this->clid                  = $header['clid'];
 		$this->minorVersion          = $header['uMinorVersion'];
 		$this->dllVersion            = $header['uDllVersion'];
 		$this->byteOrder             = $header['uByteOrder'];
@@ -156,11 +150,8 @@ class FileHeader {
 		if ( strcasecmp( $this->abSig, 'd0cf11e0a1b11ae1' ) !== 0 ) {
 			$is_valid = false;
 		}
-		if ( $this->clid != '00000000000000000000000000000000' ) {
-			$is_valid = false;
-		}
 
-		if ( $this->byteOrder != 0xfffe ) {
+		if ( $this->byteOrder != 0xfffe && $this->byteOrder != 0xffff ) {
 			$is_valid = false;
 		}
 
@@ -172,13 +163,6 @@ class FileHeader {
 	 */
 	public function getAbSig() {
 		return $this->abSig;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getClid() {
-		return $this->clid;
 	}
 
 	/**
