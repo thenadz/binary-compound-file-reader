@@ -23,6 +23,9 @@ class DirectoryEntry {
 	const DE_RED          = 0,
 		  DE_BLACK        = 1;
 
+	/** The name of the special root entry. */
+	const ROOT_NAME = 'Root Entry';
+
 	/**
 	 * @var FileHeader The file header.
 	 */
@@ -93,6 +96,17 @@ class DirectoryEntry {
 	 */
 	private $ulSize;
 
+	/**
+	 * @var bool whether directory is in the minor FAT.
+	 */
+	private $isMinor;
+
+	/**
+	 * DirectoryEntry constructor.
+	 *
+	 * @param $file_header \FileHeader The header for the file containing this directory.
+	 * @param $stream resource The stream containing the file. Will be progressed by DIRECTORY_ENTRY_LEN.
+	 */
 	public function __construct( $file_header, $stream ) {
 		$header_format =
 			'v32name/' .
@@ -129,11 +143,28 @@ class DirectoryEntry {
 		$this->sectStart = $header['sectStart'];
 		$this->ulSize = $header['ulSize'];
 
+		$this->isMinor = $this->ulSize < $file_header->getMiniSectorCutoff() && $this->name !== self::ROOT_NAME;
+
 		$this->file_header = $file_header;
+		$this->stream = $stream;
 	}
 
 	/**
-	 * @return string
+	 * @return bool Whether directory is in the minor FAT.
+	 */
+	public function isMinor() {
+		return $this->isMinor;
+	}
+
+	/**
+	 * @return int The sector size for this directory.
+	 */
+	public function getSectSize() {
+		return $this->isMinor() ? $this->file_header->getMinorSectorSize() : $this->file_header->getSectSize();
+	}
+
+	/**
+	 * @return string The directory name.
 	 */
 	public function getName() {
 		return $this->name;

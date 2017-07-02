@@ -4,11 +4,9 @@
  * Deserializes and provides getters for fields in the compound file header.
  */
 class FileHeader {
-	const
-		FREESECT   = -1,
-		ENDOFCHAIN = -2,
-		FATSECT    = -3,
-		DIFSECT    = -4;
+	const HEADER_SIZE = 512;
+
+	const VALID_SIG = 'd0cf11e0a1b11ae1';
 
 	/**
 	 * @var string d0cf11e0a1b11ae1
@@ -36,9 +34,19 @@ class FileHeader {
 	private $sectorShift;
 
 	/**
+	 * @var int Convenience variable derived from sectorShift.
+	 */
+	private $sectorSize;
+
+	/**
 	 * @var int size of mini-sectors in power-of-two (typically 6, indicating 64-byte mini-sectors)
 	 */
 	private $minorSectorShift;
+
+	/**
+	 * @var int Convenience variable derived from minorSectorShift.
+	 */
+	private $minorSectorSize;
 
 	/**
 	 * @var int number of SECTs in the FAT chain
@@ -109,13 +117,15 @@ class FileHeader {
 			'V1csectDif/' .          // 4   bytes
 			'V109sectFat';           // 436 bytes, the SECTs of the first 109 FAT sectors
 
-		$header                      = unpack( $header_format, @fread( $stream, 512 ) );
+		$header                      = unpack( $header_format, @fread( $stream, self::HEADER_SIZE ) );
 		$this->abSig                 = $header['abSig'];
 		$this->minorVersion          = $header['uMinorVersion'];
 		$this->dllVersion            = $header['uDllVersion'];
 		$this->byteOrder             = $header['uByteOrder'];
 		$this->sectorShift           = $header['uSectorShift'];
+		$this->sectorSize            = 1 << $this->sectorShift;
 		$this->minorSectorShift      = $header['uMiniSectorShift'];
+		$this->minorSectorSize       = 1 << $this->minorSectorShift;
 		$this->csectFat              = $header['csectFat'];
 		$this->sectDirStart          = $header['sectDirStart'];
 		$this->signature             = $header['signature'];
@@ -127,17 +137,8 @@ class FileHeader {
 
 		for ( $i = 1; $i <= 109; $i++ ) {
 			$v = $header['sectFat' . $i];
-			if ( $v == self::FREESECT ) break;
+			if ( $v == CompoundFile::FREESECT ) break;
 			$this->difat[] = $v;
-		}
-
-		$this->difat[] = $this->sectDifStart;
-		while ( ( $sect = array_pop( $this->difat ) ) != self::ENDOFCHAIN ) {
-			fseek( $stream, ( $sect << $this->sectorShift ) + 512 );
-			foreach ( unpack( 'V*', @fread( $stream, $this->getSectSize() ) ) as $sect ) {
-				$this->difat[] = $sect;
-				if ( $sect == self::ENDOFCHAIN ) break;
-			}
 		}
 	}
 
@@ -147,7 +148,7 @@ class FileHeader {
 	public function isValid() {
 		$is_valid = true;
 
-		if ( strcasecmp( $this->abSig, 'd0cf11e0a1b11ae1' ) !== 0 ) {
+		if ( strcasecmp( $this->abSig, self::VALID_SIG ) !== 0 ) {
 			$is_valid = false;
 		}
 
@@ -198,6 +199,10 @@ class FileHeader {
 	 */
 	public function getMinorSectorShift() {
 		return $this->minorSectorShift;
+	}
+
+	public function getMinorSectorSize() {
+		return $this->minorSectorSize;
 	}
 
 	/**
@@ -267,6 +272,6 @@ class FileHeader {
 	 * @return int The sector size.
 	 */
 	public function getSectSize() {
-		return 1 << $this->sectorShift;
+		return $this->sectorSize;
 	}
 }
