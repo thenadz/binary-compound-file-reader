@@ -63,12 +63,15 @@ class CompoundFileStream {
 		$ret = '';
 		$chain = $this->dir->isMinor() ? $this->compound_file->getMiniFatChains() : $this->compound_file->getFatChains();
 
-		while( $count >= $this->get_sector_remaining() && !$this->stream_eof() ) {
+		while( !$this->stream_eof() && $count >= $this->get_sector_remaining() ) {
 			$count -= $this->get_sector_remaining();
 			$ret .= substr( $this->cur_sector, $this->get_sector_read(), $this->get_sector_remaining() );
 			$this->set_current_sector( $chain[$this->cur_sector_i] );
 		}
-		$ret .= substr( $this->cur_sector, 0, $count );
+
+		if ( !$this->stream_eof() ) {
+			$ret .= substr( $this->cur_sector, 0, $count );
+		}
 
 		return $ret;
 	}
