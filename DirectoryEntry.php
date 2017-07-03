@@ -23,9 +23,6 @@ class DirectoryEntry {
 	const DE_RED          = 0,
 		  DE_BLACK        = 1;
 
-	/** The name of the special root entry. */
-	const ROOT_NAME = 'Root Entry';
-
 	/**
 	 * @var FileHeader The file header.
 	 */
@@ -143,7 +140,7 @@ class DirectoryEntry {
 		$this->sectStart = $header['sectStart'];
 		$this->ulSize = $header['ulSize'];
 
-		$this->isMinor = $this->ulSize < $file_header->getMiniSectorCutoff() && $this->name !== self::ROOT_NAME;
+		$this->isMinor = $this->ulSize < $file_header->getMiniSectorCutoff() && $this->mse !== self::STGTY_ROOT;
 
 		$this->file_header = $file_header;
 		$this->stream = $stream;

@@ -24,6 +24,9 @@ class CompoundFile {
 	/** @var  \DirectoryEntry[] Backs the getter. Do not access directly. */
 	private $directories;
 
+	/** @var  \DirectoryEntry The root directory entry, if one exists in file. */
+	private $rootDir;
+
 	/** @var int[] Double indirect FAT. */
 	private $difat;
 
@@ -196,6 +199,10 @@ class CompoundFile {
 			do {
 				$dir = new DirectoryEntry( $this->header, $this->stream );
 				$this->directories[$dir->getName()] = $dir;
+				if ( $dir->getMse() == DirectoryEntry::STGTY_ROOT ) {
+					$this->rootDir = $dir;
+				}
+
 				$bytes += DirectoryEntry::DIRECTORY_ENTRY_LEN;
 			} while ( $bytes < $this->header->getSectSize() );
 
@@ -210,8 +217,7 @@ class CompoundFile {
 	private function seekSector( $index, $minor = false ) {
 		if ( $minor ) {
 			$header = $this->header;
-			$dir = $this->directories[ DirectoryEntry::ROOT_NAME ];
-			$index = $header->getSectSize() * $dir->getSectStart() +
+			$index = $header->getSectSize() * $this->rootDir->getSectStart() +
 			         $header->getMinorSectorSize() * $index +
 			         FileHeader::HEADER_SIZE;
 		} else {
