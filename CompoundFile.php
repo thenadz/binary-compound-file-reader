@@ -145,7 +145,6 @@ class CompoundFile {
 			$values = unpack( $fmt, $this->getSector( $sector ) );
 			$sector = $values[$count - 1];
 			for ( $j = 0; $j < $count - 1; $j++ ) {
-				// TODO: array_merge better?
 				$this->difat[] = $values[$j];
 			}
 		}
@@ -160,7 +159,6 @@ class CompoundFile {
 		foreach ( $difat as $sect ) {
 			$values = unpack( $fmt, $this->getSector( $sect ) );
 			foreach ( $values as $v ) {
-				// TODO: array_merge better?
 				$this->fatChains[] = $v;
 			}
 		}
@@ -175,7 +173,6 @@ class CompoundFile {
 		while ( $sector != self::ENDOFCHAIN ) {
 			$values = unpack( $fmt, $this->getSector( $sector ) );
 			foreach ( $values as $v ) {
-				// TODO: array_merge better?
 				$this->miniFatChains[] = $v;
 			}
 
