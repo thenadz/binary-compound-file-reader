@@ -40,10 +40,17 @@ class CompoundFileStream {
 	 */
 	private $cur_sector_i;
 
-	function stream_open($path, $mode, $options, &$opened_path) {
-		$split = explode( '#', substr( $path, 6 ) );
+	function stream_open( $path, $mode, $options, &$opened_path ) {
+		// pull off URI scheme
+		$split = explode( '://', $path, 2 );
+		$path = ( count( $split ) === 2 ) ? $split[1] : $split[0];
+
+		// split file path from stream name
+		$split = explode( '#', $path, 2 );
+
+		// both file path and stream name are required
 		if ( count( $split ) === 2 ) {
-			$this->inner_stream = fopen( 'file:/' . $split[0], $mode/*, null, $this->context*/ );
+			$this->inner_stream = fopen( 'file://' . $split[0], $mode/*, null, $this->context*/ );
 			if ( is_resource( $this->inner_stream ) ) {
 				$this->stream_name = $split[1];
 				$this->init_compound_file();
@@ -112,6 +119,8 @@ class CompoundFileStream {
 
 		$this->set_current_sector( $sector );
 		$this->position = $offset;
+
+		return true;
 	}
 
 	function stream_stat() {
