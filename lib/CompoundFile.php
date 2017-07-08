@@ -16,7 +16,7 @@ class CompoundFile {
 	const DIFSECT = - 4;
 
 	/** @var resource The file stream containing a compound binary file. */
-	private $stream;
+	private $handle;
 
 	/** @var \FileHeader Backs the getter. Do not access directly. */
 	private $header;
@@ -39,11 +39,11 @@ class CompoundFile {
 	/**
 	 * CompoundFile constructor.
 	 *
-	 * @param $stream resource The stream pointing to the compound file contents.
+	 * @param $handle resource The stream pointing to the compound file contents.
 	 */
-	public function __construct( $stream ) {
-		$this->stream = $stream;
-		$this->header = new FileHeader( $stream );
+	public function __construct( $handle ) {
+		$this->handle = $handle;
+		$this->header = new FileHeader( $handle );
 		$this->populateDifat();
 		$this->populateFatChains();
 		$this->populateMiniFatChains();
@@ -77,20 +77,24 @@ class CompoundFile {
 	public function getSector( $index, $minor = false ) {
 		$size = $minor ? $this->header->getMinorSectorSize() : $this->header->getSectSize();
 		$this->seekSector( $index, $minor );
-		return fread( $this->stream, $size );
+		return fread( $this->handle, $size );
 	}
 
 	/**
-	 * @param $name string Name of the stream to retrieve.
+	 * @param $name_or_dir \DirectoryEntry|string Name of the stream to retrieve or its directory entry.
 	 *
 	 * @return null|string The contents of the stream or null if no matching stream found.
 	 */
-	public function getStream( $name ) {
+	public function getStream( $name_or_dir ) {
 		$ret = null;
 
-		if ( array_key_exists( $name, $this->directories ) ) {
+		$dir = $name_or_dir;
+		if ( is_string( $name_or_dir ) ) {
+			$dir = $this->getDirectory( $name_or_dir );
+		}
+
+		if ( ! is_null( $dir ) ) {
 			$ret = '';
-			$dir = $this->directories[$name];
 			$sector = $dir->getSectStart();
 			$chain = $dir->isMinor() ? $this->miniFatChains : $this->fatChains;
 
@@ -133,6 +137,22 @@ class CompoundFile {
 	 */
 	public function getDirectories() {
 		return $this->directories;
+	}
+
+	/**
+	 * @param $name string The directory name to be matched.
+	 *
+	 * @return \DirectoryEntry The matched directory or null if no match exists.
+	 */
+	public function getDirectory( $name ) {
+		return array_key_exists( $name, $this->directories ) ? $this->directories[$name] : null;
+	}
+
+	/**
+	 * @return resource The resource being read from.
+	 */
+	protected function getHandle() {
+		return $this->handle;
 	}
 
 	/** Populates the DIFAT data structure. */
@@ -197,7 +217,7 @@ class CompoundFile {
 			$this->seekSector( $sector );
 			$bytes = 0;
 			do {
-				$dir = new DirectoryEntry( $this->header, $this->stream );
+				$dir = new DirectoryEntry( $this->header, $this->handle );
 				$this->directories[$dir->getName()] = $dir;
 				if ( $dir->getMse() == DirectoryEntry::STGTY_ROOT ) {
 					$this->rootDir = $dir;
@@ -214,7 +234,7 @@ class CompoundFile {
 	 * @param $index int Seek within the compound file resource to the given sector.
 	 * @param $minor bool Whether we're looking for a minor sector.
 	 */
-	private function seekSector( $index, $minor = false ) {
+	protected function seekSector( $index, $minor = false ) {
 		if ( $minor ) {
 			$header = $this->header;
 			$index = $header->getSectSize() * $this->rootDir->getSectStart() +
@@ -224,6 +244,14 @@ class CompoundFile {
 			$index = $this->header->getSectSize() * $index + FileHeader::HEADER_SIZE;
 		}
 
-		fseek( $this->stream, $index );
+		fseek( $this->handle, $index );
+	}
+
+	/**
+	 * Seeks the start of the given directory.
+	 * @param $dir \DirectoryEntry The directory to seek.
+	 */
+	protected function seekDirectory( $dir ) {
+		$this->seekSector( $dir->getSectStart(), $dir->isMinor() );
 	}
 }

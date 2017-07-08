@@ -142,8 +142,6 @@ class DirectoryEntry {
 
 		$this->isMinor = $this->ulSize < $file_header->getMiniSectorCutoff() && $this->mse !== self::STGTY_ROOT;
 
-//		echo 'Directory: ' . $this->name . '<br>';
-
 		$this->file_header = $file_header;
 		$this->stream = $stream;
 	}

@@ -4,92 +4,95 @@
  * Deserializes and provides getters for fields in the compound file header.
  */
 class FileHeader {
+
 	const HEADER_SIZE = 512;
 
 	const VALID_SIG = 'd0cf11e0a1b11ae1';
 
+	const LITTLE_ENDIAN_BYTE_ORDER = 0xFFFE;
+
 	/**
-	 * @var string d0cf11e0a1b11ae1
+	 * @var string Backs the getter.
 	 */
 	private $abSig;
 
 	/**
-	 * @var int The minor version.
+	 * @var int Backs the getter.
 	 */
 	private $minorVersion;
 
 	/**
-	 * @var int The Major (DLL) version.
+	 * @var int Backs the getter.
 	 */
 	private $dllVersion;
 
 	/**
-	 * @var int 0xFFFE indicates Intel byte-ordering
+	 * @var int Backs the getter.
 	 */
 	private $byteOrder;
 
 	/**
-	 * @var int size of sectors in power-of-two (typically 9, indicating 512-byte sectors)
+	 * @var int Backs the getter.
 	 */
 	private $sectorShift;
 
 	/**
-	 * @var int Convenience variable derived from sectorShift.
+	 * @var int Backs the getter.
 	 */
 	private $sectorSize;
 
 	/**
-	 * @var int size of mini-sectors in power-of-two (typically 6, indicating 64-byte mini-sectors)
+	 * @var int Backs the getter.
 	 */
 	private $minorSectorShift;
 
 	/**
-	 * @var int Convenience variable derived from minorSectorShift.
+	 * @var int Backs the getter.
 	 */
 	private $minorSectorSize;
 
 	/**
-	 * @var int number of SECTs in the FAT chain
+	 * @var int Backs the getter.
 	 */
 	private $csectFat;
 
 	/**
-	 * @var int first SECT in the Directory chain
+	 * @var int Backs the getter.
 	 */
 	private $sectDirStart;
 
 	/**
-	 * @var int signature used for transactioning: must be zero. The reference implementation does not support transactioning
+	 * @var int Backs the getter.
 	 */
 	private $signature;
 
 	/**
-	 * @var int maximum size for mini-streams: typically 4096 bytes
+	 * @var int Backs the getter.
 	 */
 	private $miniSectorCutoff;
 
 	/**
-	 * @var int first SECT in the mini-FAT chain
+	 * @var int Backs the getter.
 	 */
 	private $sectMiniFatStart;
 
 	/**
-	 * @var int number of SECTs in the mini-FAT chain
+	 * @var int Backs the getter.
 	 */
 	private $csectMiniFat;
 
 	/**
-	 * @var int first SECT in the DIF chain
+	 * @var int Backs the getter.
 	 */
 	private $sectDifStart;
 
 	/**
-	 * @var int number of SECTs in the DIF chain
+	 * @var int Backs the getter.
 	 */
 	private $csectDif;
 
 	/**
-	 * @var int[] The double-indirect FAT.
+	 * @var int[] Backs the getter.
 	 */
 	private $difat = array();
 
@@ -167,14 +170,14 @@ class FileHeader {
 	}
 
 	/**
-	 * @return mixed
+	 * @return int The minor version.
 	 */
 	public function getMinorVersion() {
 		return $this->minorVersion;
 	}
 
 	/**
-	 * @return mixed
+	 * @return int The Major (DLL) version.
 	 */
 	public function getDllVersion() {
 		return $this->dllVersion;
@@ -188,84 +191,17 @@ class FileHeader {
 	}
 
 	/**
-	 * @return mixed
+	 * @return bool Whether file uses little endian encoding.
+	 */
+	public function isLittleEndian() {
+		return $this->byteOrder === self::LITTLE_ENDIAN_BYTE_ORDER;
+	}
+
+	/**
+	 * @return int size of sectors in power-of-two (typically 9, indicating 512-byte sectors)
 	 */
 	public function getSectorShift() {
 		return $this->sectorShift;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getMinorSectorShift() {
-		return $this->minorSectorShift;
-	}
-
-	public function getMinorSectorSize() {
-		return $this->minorSectorSize;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getCsectFat() {
-		return $this->csectFat;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getSectDirStart() {
-		return $this->sectDirStart;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getSignature() {
-		return $this->signature;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getMiniSectorCutoff() {
-		return $this->miniSectorCutoff;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getSectMiniFatStart() {
-		return $this->sectMiniFatStart;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getCsectMiniFat() {
-		return $this->csectMiniFat;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getSectDifStart() {
-		return $this->sectDifStart;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getCsectDif() {
-		return $this->csectDif;
-	}
-
-	/**
-	 * @return int[] The double-indirect FAT.
-	 */
-	public function getDifat() {
-		return $this->difat;
 	}
 
 	/**
@@ -273,5 +209,82 @@ class FileHeader {
 	 */
 	public function getSectSize() {
 		return $this->sectorSize;
+	}
+
+	/**
+	 * @return int size of mini-sectors in power-of-two (typically 6, indicating 64-byte mini-sectors)
+	 */
+	public function getMinorSectorShift() {
+		return $this->minorSectorShift;
+	}
+
+	/**
+	 * @return int Convenience variable derived from minorSectorShift.
+	 */
+	public function getMinorSectorSize() {
+		return $this->minorSectorSize;
+	}
+
+	/**
+	 * @return int number of SECTs in the FAT chain
+	 */
+	public function getCsectFat() {
+		return $this->csectFat;
+	}
+
+	/**
+	 * @return int first SECT in the Directory chain
+	 */
+	public function getSectDirStart() {
+		return $this->sectDirStart;
+	}
+
+	/**
+	 * @return int signature used for transactioning: must be zero. The reference implementation does not support transactioning
+	 */
+	public function getSignature() {
+		return $this->signature;
+	}
+
+	/**
+	 * @return int maximum size for mini-streams: typically 4096 bytes
+	 */
+	public function getMiniSectorCutoff() {
+		return $this->miniSectorCutoff;
+	}
+
+	/**
+	 * @return int first SECT in the mini-FAT chain
+	 */
+	public function getSectMiniFatStart() {
+		return $this->sectMiniFatStart;
+	}
+
+	/**
+	 * @return int number of SECTs in the mini-FAT chain
+	 */
+	public function getCsectMiniFat() {
+		return $this->csectMiniFat;
+	}
+
+	/**
+	 * @return int first SECT in the DIF chain
+	 */
+	public function getSectDifStart() {
+		return $this->sectDifStart;
+	}
+
+	/**
+	 * @return int number of SECTs in the DIF chain
+	 */
+	public function getCsectDif() {
+		return $this->csectDif;
+	}
+
+	/**
+	 * @return int[] The double-indirect FAT (up to the first 109 entries).
+	 */
+	public function getDifat() {
+		return $this->difat;
 	}
 }
