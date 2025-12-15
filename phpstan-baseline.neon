@@ -1,0 +1,321 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Argument of an invalid type array\\|false supplied for foreach, only iterables are supported\\.$#"
+			count: 2
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Call to method get32BitFormat\\(\\) on an unknown class FileHeader\\.$#"
+			count: 2
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Call to method getMinorSectorSize\\(\\) on an unknown class FileHeader\\.$#"
+			count: 3
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Call to method getSectMiniFatStart\\(\\) on an unknown class FileHeader\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Call to method getSectSize\\(\\) on an unknown class FileHeader\\.$#"
+			count: 7
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Call to method getSectStart\\(\\) on an unknown class DirectoryEntry\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Cannot access offset \\(float\\|int\\) on array\\|false\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Cannot access offset int\\<1, max\\> on array\\|false\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Cannot call method getSectStart\\(\\) on DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|string\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Cannot call method getUlSize\\(\\) on DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|string\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Cannot call method isMinor\\(\\) on DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|string\\.$#"
+			count: 2
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Instantiated class DanRossiter\\\\BinaryCompoundFile\\\\InvalidArgumentException not found\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Instantiated class DanRossiter\\\\BinaryCompoundFile\\\\RuntimeException not found\\.$#"
+			count: 2
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Method DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:getDirectories\\(\\) should return array\\<DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\> but returns array\\<DirectoryEntry\\>\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Method DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:getDirectory\\(\\) should return DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|null but returns DirectoryEntry\\|null\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Method DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:getHeader\\(\\) should return DanRossiter\\\\BinaryCompoundFile\\\\FileHeader but returns FileHeader\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of function unpack expects string, string\\|false given\\.$#"
+			count: 3
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$directories \\(array\\<DirectoryEntry\\>\\) does not accept array\\<DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|DirectoryEntry\\>\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$directories has unknown class DirectoryEntry as its type\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$header \\(FileHeader\\) does not accept DanRossiter\\\\BinaryCompoundFile\\\\FileHeader\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$header has unknown class FileHeader as its type\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$rootDir \\(DirectoryEntry\\) does not accept DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile\\:\\:\\$rootDir has unknown class DirectoryEntry as its type\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Throwing object of an unknown class DanRossiter\\\\BinaryCompoundFile\\\\InvalidArgumentException\\.$#"
+			count: 1
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Throwing object of an unknown class DanRossiter\\\\BinaryCompoundFile\\\\RuntimeException\\.$#"
+			count: 2
+			path: src/CompoundFile.php
+
+		-
+			message: "#^Instantiated class DanRossiter\\\\BinaryCompoundFile\\\\InvalidArgumentException not found\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Method DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:stream_stat\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Parameter \\#1 \\$handle of class DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile constructor expects resource, bool\\|resource given\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:\\$context has no type specified\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:\\$cur_sector \\(string\\) does not accept string\\|false\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:\\$cur_sector \\(string\\) in isset\\(\\) is not nullable\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:\\$dir \\(DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\) does not accept DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\|null\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\CompoundFileStream\\:\\:\\$dir \\(DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\) in isset\\(\\) is not nullable\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Throwing object of an unknown class DanRossiter\\\\BinaryCompoundFile\\\\InvalidArgumentException\\.$#"
+			count: 1
+			path: src/CompoundFileStream.php
+
+		-
+			message: "#^Cannot access offset 'cb' on array\\|false\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Cannot access offset 'name' on array\\|false\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Method DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\:\\:getLongLong\\(\\) never returns float so it can be removed from the return type\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of function unpack expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\:\\:\\$name \\(string\\) does not accept string\\|false\\.$#"
+			count: 1
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Property DanRossiter\\\\BinaryCompoundFile\\\\DirectoryEntry\\:\\:\\$ulSize \\(int\\) does not accept float\\|int\\.$#"
+			count: 2
+			path: src/DirectoryEntry.php
+
+		-
+			message: "#^Cannot access offset 'abSig' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'csectDif' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'csectFat' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'csectMiniFat' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'sectDifStart' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'sectDirStart' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'sectMiniFatStart' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'signature' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'uByteOrder' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'uDllVersion' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'uMiniSectorShift' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'uMinorVersion' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'uSectorShift' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 'ulMiniSectorCutoff' on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset 1 on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Cannot access offset literal\\-string&non\\-falsy\\-string on array\\|false\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function substr expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Parameter \\#2 \\$string of function unpack expects string, string\\|false given\\.$#"
+			count: 1
+			path: src/FileHeader.php
+
+		-
+			message: "#^Parameter \\#1 \\$handle of class DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile constructor expects resource, resource\\|false given\\.$#"
+			count: 4
+			path: tests/Integration/CompoundFileParsingTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$stream of function fclose expects resource, resource\\|false given\\.$#"
+			count: 4
+			path: tests/Integration/CompoundFileParsingTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 4
+			path: tests/Integration/CompoundFileParsingTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$handle of class DanRossiter\\\\BinaryCompoundFile\\\\CompoundFile constructor expects resource, resource\\|false given\\.$#"
+			count: 1
+			path: tests/Integration/StreamWrapperTest.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function strlen expects string, string\\|null given\\.$#"
+			count: 2
+			path: tests/Integration/StreamWrapperTest.php

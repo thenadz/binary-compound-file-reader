@@ -1,0 +1,40 @@
+# Test outputs
+extracted_streams/
+*.bin
+
+# Composer
+/vendor/
+composer.lock
+
+# PHPUnit
+.phpunit.cache/
+coverage/
+
+# PHPStan
+.phpstan.cache/
+
+# PHP-CS-Fixer
+.php-cs-fixer.cache
+
+# Debug/test files
+debug-*.php
+check-*.php
+verify-*.php
+
+# Big-endian test files (generated)
+*-BE.doc
+*-BE.xls
+*-BE.ppt
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.log
+null

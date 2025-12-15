@@ -1,287 +1,379 @@
 <?php
 
-class DirectoryEntry {
+namespace DanRossiter\BinaryCompoundFile;
 
-	/**
-	 * Length of a single directory entry.
-	 */
-	const DIRECTORY_ENTRY_LEN = 128;
+class DirectoryEntry
+{
+    /**
+     * Length of a single directory entry.
+     */
+    public const DIRECTORY_ENTRY_LEN = 128;
 
-	/**
-	 * STGTY enum values
-	 */
-	const STGTY_INVALID   = 0,
-		  STGTY_STORAGE   = 1,
-	      STGTY_STREAM    = 2,
-          STGTY_LOCKBYTES = 3,
-          STGTY_PROPERTY  = 4,
-		  STGTY_ROOT      = 5;
+    /**
+     * @var CompoundFile The compound file containing this directory.
+     */
+    private $compoundFile;
 
-	/**
-	 * DE enum values
-	 */
-	const DE_RED          = 0,
-		  DE_BLACK        = 1;
+    /**
+     * @var FileHeader The file header.
+     */
+    private $file_header;
 
-	/**
-	 * @var FileHeader The file header.
-	 */
-	private $file_header;
+    /**
+     * @var resource The stream.
+     */
+    private $stream;
 
-	/**
-	 * @var resource The stream.
-	 */
-	private $stream;
+    /**
+     * @var string The element name
+     */
+    private $name = '';
 
-	/**
-	 * @var string The element name
-	 */
-	private $name = '';
+    /**
+     * @var int Length of the element name in characters (not bytes).
+     */
+    private $cb;
 
-	/**
-	 * @var int Length of the element name in characters (not bytes).
-	 */
-	private $cb;
+    /**
+     * @var int Type of object (StorageType constant).
+     */
+    private $mse;
 
-	/**
-	 * @var int Type of object -- taken from STGTY_* consts.
-	 */
-	private $mse;
+    /**
+     * @var int Color (DirectoryEntryColor constant).
+     */
+    private $bflags;
 
-	/**
-	 * @var int Color -- taken from DE_* consts.
-	 */
-	private $bflags;
+    /**
+     * @var int The left sibling of this element in the directory tree.
+     */
+    private $sidLeftSib;
 
-	/**
-	 * @var int The left sibling of this element in the directory tree.
-	 */
-	private $sidLeftSib;
+    /**
+     * @var int The right sibling of this element in the directory tree.
+     */
+    private $sidRightSib;
 
-	/**
-	 * @var int The right sibling of this element in the directory tree.
-	 */
-	private $sidRightSib;
+    /**
+     * @var int The child acting as the root of all the children of this element (if mse = StorageType::STORAGE).
+     */
+    private $sidChild;
 
-	/**
-	 * @var int The  the child acting as the root of all the children of this element (if mse = STGTY_STORAGE)
-	 */
-	private $sidChild;
+    /**
+     * @var string CLSID of this storage (if mse = StorageType::STORAGE).
+     */
+    private $clsid;
 
-	/**
-	 * @var string CLSID of this storage (if mse = STGTY_STORAGE)
-	 */
-	private $clsid;
+    /**
+     * @var int User flags of this storage (if mse = StorageType::STORAGE).
+     */
+    private $dwUserFlags;
 
-	/**
-	 * @var int User flags of this storage (if mse = STGTY_STORAGE)
-	 */
-	private $dwUserFlags;
+    /**
+     * @var float[] 'create'/'modify' time-stamps (if mse = StorageType::STORAGE).
+     */
+    private $time;
 
-	/**
-	 * @var float[] 'create'/'modify' time-stamps (if mse = STGTY_STORAGE)
-	 */
-	private $time;
+    /**
+     * @var int Starting SECT of the stream (if mse = StorageType::STREAM).
+     */
+    private $sectStart;
 
-	/**
-	 * @var int starting SECT of the stream (if mse = STGTY_STREAM)
-	 */
-	private $sectStart;
+    /**
+     * @var int Size of stream in bytes (if mse = StorageType::STREAM).
+     */
+    private $ulSize;
 
-	/**
-	 * @var int size of stream in bytes (if mse = STGTY_STREAM)
-	 */
-	private $ulSize;
+    /**
+     * @var bool whether directory is in the minor FAT.
+     */
+    private $isMinor;
 
-	/**
-	 * @var bool whether directory is in the minor FAT.
-	 */
-	private $isMinor;
+    /**
+     * DirectoryEntry constructor.
+     *
+     * @param CompoundFile $compoundFile The compound file containing this directory.
+     * @param resource $stream The stream containing the file. Will be progressed by DIRECTORY_ENTRY_LEN.
+     */
+    public function __construct(CompoundFile $compoundFile, $stream)
+    {
+        $this->compoundFile = $compoundFile;
+        $this->file_header = $compoundFile->getHeader();
 
-	/**
-	 * DirectoryEntry constructor.
-	 *
-	 * @param $file_header \FileHeader The header for the file containing this directory.
-	 * @param $stream resource The stream containing the file. Will be progressed by DIRECTORY_ENTRY_LEN.
-	 */
-	public function __construct( $file_header, $stream ) {
-		$header_format =
-			'v32name/' .
-			'v1cb/' .
-			'C1mse/' .
-			'C1bflags/' .
-			'V1sidLeftSib/' .
-			'V1sidRightSib/' .
-			'V1sidChild/' .
-			'H32clsid/' .
-			'V1dwUserFlags/' .
-			'V2createTime/' .
-			'V2modifyTime/' .
-			'V1sectStart/' .
-			'V1ulSize';
-		$header = unpack( $header_format, @fread( $stream, self::DIRECTORY_ENTRY_LEN ) );
-		for ( $i = 1; $i <= 32; $i++ ) {
-			$chr = $header['name' . $i];
-			if ( $chr ==  0 ) break;
-			$this->name .= chr( $chr );
-		}
+        // Use appropriate unpack format based on byte order
+        $isBigEndian = $this->file_header->isBigEndian();
+        $v16 = $this->file_header->get16BitFormat();
+        $V32 = $this->file_header->get32BitFormat();
 
-		$this->cb = $header['cb'];
-		$this->mse = $header['mse'];
-		$this->bflags = $header['bflags'];
-		$this->sidLeftSib = $header['sidLeftSib'];
-		$this->sidRightSib = $header['sidRightSib'];
-		$this->sidChild = $header['sidChild'];
-		$this->clsid = $header['clsid'];
-		$this->dwUserFlags = $header['dwUserFlags'];
-		$this->time = array(
-			'create' => self::getLongLong( $header['createTime1'], $header['createTime2'] ),
-			'modify' => self::getLongLong( $header['modifyTime1'], $header['modifyTime2'] ) );
-		$this->sectStart = $header['sectStart'];
-		$this->ulSize = $header['ulSize'];
+        $header_format =
+            'a64name/' .                     // 64 bytes for name (UTF-16LE or UTF-16BE)
+            "{$v16}1cb/" .
+            'C1mse/' .
+            'C1bflags/' .
+            "{$V32}1sidLeftSib/" .
+            "{$V32}1sidRightSib/" .
+            "{$V32}1sidChild/" .
+            'H32clsid/' .
+            "{$V32}1dwUserFlags/" .
+            "{$V32}2createTime/" .
+            "{$V32}2modifyTime/" .
+            "{$V32}1sectStart/" .
+            "{$V32}2ulSize";                 // 8 bytes for size (64-bit for version 4+)
+        $header = unpack($header_format, @fread($stream, self::DIRECTORY_ENTRY_LEN));
 
-		$this->isMinor = $this->ulSize < $file_header->getMiniSectorCutoff() && $this->mse !== self::STGTY_ROOT;
+        // Convert UTF-16 name to UTF-8 (LE or BE depending on file byte order)
+        // Clamp cb to 64 bytes max to prevent reading beyond name field
+        $nameLength = min($header['cb'] > 0 ? $header['cb'] : 64, 64);
+        $nameBytes = substr($header['name'], 0, $nameLength);
+        $encoding = $isBigEndian ? 'UTF-16BE' : 'UTF-16LE';
+        $converted = iconv($encoding, 'UTF-8//IGNORE', $nameBytes);
+        // Store original name with only trailing nulls removed
+        $this->name = $converted !== false ? rtrim($converted, "\x00") : '';
 
-		$this->file_header = $file_header;
-		$this->stream = $stream;
-	}
+        $this->cb = $header['cb'];
+        $this->mse = $header['mse'];
+        $this->bflags = $header['bflags'];
+        $this->sidLeftSib = BinaryUtils::int32($header['sidLeftSib']);
+        $this->sidRightSib = BinaryUtils::int32($header['sidRightSib']);
+        $this->sidChild = BinaryUtils::int32($header['sidChild']);
+        $this->clsid = $header['clsid'];
+        $this->dwUserFlags = $header['dwUserFlags'];
+        $this->time = [
+            'create' => self::getLongLong($header['createTime1'], $header['createTime2'], $isBigEndian),
+            'modify' => self::getLongLong($header['modifyTime1'], $header['modifyTime2'], $isBigEndian),
+        ];
+        $this->sectStart = BinaryUtils::int32($header['sectStart']);
 
-	/**
-	 * @return bool Whether directory is in the minor FAT.
-	 */
-	public function isMinor() {
-		return $this->isMinor;
-	}
+        // ulSize is 64-bit for version 4+ files, 32-bit for version 3
+        // Negative sectStart means empty/invalid stream
+        if ($this->sectStart >= 0) {
+            $fileVersion = $compoundFile->getHeader()->getDllVersion();
+            if ($fileVersion >= 4) {
+                // 64-bit size for version 4+ files
+                $this->ulSize = self::getLongLong($header['ulSize1'], $header['ulSize2'], $isBigEndian);
+            } else {
+                // For version 3, only low 32 bits are used
+                // For big-endian, low 32 bits are in ulSize2, not ulSize1
+                $this->ulSize = $isBigEndian ? $header['ulSize2'] : $header['ulSize1'];
+            }
+        } else {
+            $this->ulSize = 0;
+        }
 
-	/**
-	 * @return int The sector size for this directory.
-	 */
-	public function getSectSize() {
-		return $this->isMinor() ? $this->file_header->getMinorSectorSize() : $this->file_header->getSectSize();
-	}
+        $this->isMinor = $this->ulSize < $this->file_header->getMiniSectorCutoff() && $this->mse !== StorageType::ROOT;
 
-	/**
-	 * @return string The directory name.
-	 */
-	public function getName() {
-		return $this->name;
-	}
+        $this->stream = $stream;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getCb() {
-		return $this->cb;
-	}
+    /**
+     * @return bool Whether directory is in the minor FAT.
+     */
+    public function isMinor(): bool
+    {
+        return $this->isMinor;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getMse() {
-		return $this->mse;
-	}
+    /**
+     * @return int The sector size for this directory.
+     */
+    public function getSectSize(): int
+    {
+        return $this->isMinor() ? $this->file_header->getMinorSectorSize() : $this->file_header->getSectSize();
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getBflags() {
-		return $this->bflags;
-	}
+    /**
+     * @return string The directory name.
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getSidLeftSib() {
-		return $this->sidLeftSib;
-	}
+    /**     * Returns a printable version of the name with control characters removed.
+     *
+     * @return string The printable element name.
+     */
+    public function getPrintableName(): string
+    {
+        // Strip control characters (0x00-0x06) for display purposes
+        return trim($this->name, "\x00\x01\x02\x03\x04\x05\x06");
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getSidRightSib() {
-		return $this->sidRightSib;
-	}
+    /**     * @return int The length of the element name in characters (not bytes).
+     */
+    public function getCb(): int
+    {
+        return $this->cb;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getSidChild() {
-		return $this->sidChild;
-	}
+    /**
+     * @return int The storage type (StorageType constant).
+     */
+    public function getMse()
+    {
+        return $this->mse;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getClsid() {
-		return $this->clsid;
-	}
+    /**
+     * @return int The color (DirectoryEntryColor constant).
+     */
+    public function getBflags()
+    {
+        return $this->bflags;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getDwUserFlags() {
-		return $this->dwUserFlags;
-	}
+    /**
+     * @return int The SID of the left sibling in the directory tree.
+     */
+    public function getSidLeftSib(): int
+    {
+        return $this->sidLeftSib;
+    }
 
-	/**
-	 * @return float[]
-	 */
-	public function getTime() {
-		return $this->time;
-	}
+    /**
+     * @return int The SID of the right sibling in the directory tree.
+     */
+    public function getSidRightSib(): int
+    {
+        return $this->sidRightSib;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getSectStart() {
-		return $this->sectStart;
-	}
+    /**
+     * @return int The SID of the child (root of children for storage entries).
+     */
+    public function getSidChild(): int
+    {
+        return $this->sidChild;
+    }
 
-	/**
-	 * @return int
-	 */
-	public function getUlSize() {
-		return $this->ulSize;
-	}
+    /**
+     * @return string The CLSID (Class ID) of this storage object.
+     */
+    public function getClsid(): string
+    {
+        return $this->clsid;
+    }
 
-	public function getLeftSib() {
-		return $this->getEntryBySid( $this->sidLeftSib );
-	}
+    /**
+     * @return int User-defined flags for this storage object.
+     */
+    public function getDwUserFlags(): int
+    {
+        return $this->dwUserFlags;
+    }
 
-	public function getRightSib() {
-		return $this->getEntryBySid( $this->sidRightSib );
-	}
+    /**
+     * @return float[] Array with 'create' and 'modify' timestamps.
+     */
+    public function getTime(): array
+    {
+        return $this->time;
+    }
 
-	public function getChildSib() {
-		return $this->getEntryBySid( $this->sidChild );
-	}
+    /**
+     * @return int The starting sector of the stream.
+     */
+    public function getSectStart(): int
+    {
+        return $this->sectStart;
+    }
 
-	private function getEntryBySid( $sid ) {
-		$offset = $sid * self::DIRECTORY_ENTRY_LEN;
-		$difat = $this->file_header->getDifat();
-		$sector_size = $this->file_header->getSectSize();
-		$sector = $this->file_header->getSectDirStart();
-		$sector_count = floor( $offset / $sector_size );
-		while ( $sector_count-- > 0 ) {
-			$sector = $difat[$sector];
-		}
-		$offset %= $sector_size;
-		fseek( $this->stream, $sector * $sector_size + 512 + $offset );
-		return new DirectoryEntry( $this->file_header, $this->stream );
-	}
+    /**
+     * @return int The size of the stream in bytes.
+     */
+    public function getUlSize(): int
+    {
+        return $this->ulSize;
+    }
 
-	/**
-	 * @param $high int High order 32-bits
-	 * @param $low int Low order 32-bits
-	 *
-	 * @return number The value as an int or float depending on int size.
-	 */
-	private static function getLongLong( $high, $low ) {
-		if ( PHP_INT_SIZE >= 8 ) {
-			return ( $high << 32 ) | $low;
-		} else {
-			return $high * pow( 2, 32 ) + $low;
-		}
-	}
+    /**
+     * @return DirectoryEntry|null The left sibling directory entry, or null if none exists.
+     */
+    public function getLeftSib(): ?DirectoryEntry
+    {
+        return $this->getEntryBySid($this->sidLeftSib);
+    }
+
+    /**
+     * @return DirectoryEntry|null The right sibling directory entry, or null if none exists.
+     */
+    public function getRightSib(): ?DirectoryEntry
+    {
+        return $this->getEntryBySid($this->sidRightSib);
+    }
+
+    /**
+     * @return DirectoryEntry|null The child directory entry (root of children), or null if none exists.
+     */
+    public function getChildSib(): ?DirectoryEntry
+    {
+        return $this->getEntryBySid($this->sidChild);
+    }
+
+    /**
+     * Retrieves a directory entry by its Stream ID (SID).
+     *
+     * Walks through the FAT chain to locate the sector containing the directory entry
+     * at the specified SID, then reads and returns the entry.
+     *
+     * @param int $sid The Stream ID of the directory entry to retrieve.
+     * @return DirectoryEntry|null The directory entry, or null if SID is invalid or not found.
+     */
+    private function getEntryBySid(int $sid): ?DirectoryEntry
+    {
+        if ($sid < 0) {
+            return null;
+        }
+
+        $offset = $sid * self::DIRECTORY_ENTRY_LEN;
+        $sector_size = $this->file_header->getSectSize();
+        $sector = $this->file_header->getSectDirStart();
+        $fatChains = $this->compoundFile->getFatChains();
+
+        // Walk through sectors using FAT chains
+        $entries_per_sector = $sector_size / self::DIRECTORY_ENTRY_LEN;
+        $target_sector_index = floor($sid / $entries_per_sector);
+        $entry_offset = ($sid % $entries_per_sector) * self::DIRECTORY_ENTRY_LEN;
+
+        for ($i = 0; $i < $target_sector_index; $i++) {
+            if (!array_key_exists($sector, $fatChains)) {
+                return null;
+            }
+            $sector = $fatChains[$sector];
+            if ($sector < 0) {
+                return null;
+            }
+        }
+
+        fseek($this->stream, $sector * $sector_size + FileHeader::HEADER_SIZE + $entry_offset);
+
+        return new DirectoryEntry($this->compoundFile, $this->stream);
+    }
+
+    /**
+     * Combines two 32-bit values into a 64-bit value, handling byte order.
+     *
+     * @param int $value1 First 32-bit value from unpack.
+     * @param int $value2 Second 32-bit value from unpack.
+     * @param bool $isBigEndian Whether the source data is big-endian.
+     * @return int|float The combined 64-bit value (int on 64-bit PHP, float on 32-bit PHP).
+     */
+    private static function getLongLong(int $value1, int $value2, bool $isBigEndian)
+    {
+        // For big-endian, unpack gives [high, low] in correct order
+        // For little-endian, unpack gives [low, high] so we need to swap
+        if ($isBigEndian) {
+            $high = $value1;
+            $low = $value2;
+        } else {
+            $high = $value2;
+            $low = $value1;
+        }
+
+        if (PHP_INT_SIZE >= 8) {
+            return ($high << 32) | $low;
+        } else {
+            return $high * pow(2, 32) + $low;
+        }
+    }
 }
-

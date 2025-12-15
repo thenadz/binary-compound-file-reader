@@ -1,0 +1,40 @@
+{
+    "name": "danrossiter/binary-compound-file",
+    "description": "Pure PHP library for reading Microsoft Compound Binary File Format (CFBF/OLE) documents. Supports both little-endian and big-endian files with stream wrapper interface.",
+    "type": "library",
+    "keywords": ["compound-file", "ole", "cfbf", "binary", "doc", "xls", "ppt", "structured-storage"],
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Dan Rossiter",
+            "email": "dan@rossiters.org"
+        }
+    ],
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DanRossiter\\BinaryCompoundFile\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DanRossiter\\BinaryCompoundFile\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage",
+        "phpstan": "phpstan analyse src tests --level=8",
+        "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
